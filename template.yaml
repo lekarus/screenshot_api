@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Screenshot API
+
+  Sample SAM Template for Screenshot API
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+
+Parameters:
+    GoogleClientId:
+        Description: 'The Google client id'
+        Type: "AWS::SSM::Parameter::Value<String>"
+        Default: GoogleClientId
+
+    GoogleClientSecret:
+        Description: 'The Google client password'
+        Type: "AWS::SSM::Parameter::Value<String>"
+        Default: GoogleClientSecret
+
+Resources:
+  FastApiLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./
+    Properties:
+      PackageType: Image
+      Events:
+        ApiGateWayProxy:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+
+  DynamoDB:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: UserPool
+
+  ScreenshotUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ScreenshotUserPool
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+
+  GoogleProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      AttributeMapping: {
+        "name": "name",
+        "family_name": "family_name",
+        "email": "email",
+        "username": "sub",
+      }
+      ProviderDetails: {
+         "client_id" : !Ref GoogleClientId,
+         "client_secret": !Ref GoogleClientSecret,
+         "authorize_scopes": "openid profile email",
+      }
+      ProviderName: Google
+      ProviderType: Google
+      UserPoolId: !Ref ScreenshotUserPool
+
+  GoogleClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref ScreenshotUserPool
+      SupportedIdentityProviders:
+        - COGNITO
+        - !Ref GoogleProvider
+      CallbackURLs:
+        - https://jwt.io
+
+  CognitoDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: screenshot
+      UserPoolId: !Ref ScreenshotUserPool

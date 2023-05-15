@@ -1,0 +1,1 @@
+Is an API that allows users to save screenshots in the cloud and set up access and sharing policies.
