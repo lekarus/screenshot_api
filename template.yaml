@@ -39,10 +39,15 @@ Resources:
             Path: /{proxy+}
             Method: any
 
-  DynamoDB:
+  UserTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       TableName: UserPool
+
+  SubscriptionTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Subscription
 
   ScreenshotUserPool:
     Type: AWS::Cognito::UserPool
