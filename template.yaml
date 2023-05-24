@@ -25,6 +25,11 @@ Parameters:
         Default: GoogleClientSecret
 
 Resources:
+  ApiGateWayProxy:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref "AWS::StackName"
+
   FastApiLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -33,11 +38,18 @@ Resources:
     Properties:
       PackageType: Image
       Events:
-        ApiGateWayProxy:
+        GateWayProxy:
           Type: Api
           Properties:
             Path: /{proxy+}
             Method: any
+            RestApiId: !Ref ApiGateWayProxy
+      Environment:
+        Variables:
+          UserPoolId: !Ref ScreenshotUserPool
+          CognitoDomain: !Ref CognitoDomain
+          Region: !Ref "AWS::Region"
+          StackName: !Ref "AWS::StackName"
 
   DynamoDB:
     Type: AWS::Serverless::SimpleTable
@@ -82,6 +94,13 @@ Resources:
         - !Ref GoogleProvider
       CallbackURLs:
         - https://jwt.io
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
 
   CognitoDomain:
     Type: AWS::Cognito::UserPoolDomain

@@ -8,6 +8,8 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 mangum = "*"
 python-multipart = "*"
+boto3 = "*"
+requests = "*"
 
 [dev-packages]
 

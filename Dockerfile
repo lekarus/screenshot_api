@@ -5,6 +5,6 @@ COPY Pipfile.lock .
 
 RUN pip install pipenv && pipenv install --system
 
-COPY hello_world ./
+COPY screenshot_api ./
 
 CMD ["app.lambda_handler"]
