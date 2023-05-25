@@ -4,7 +4,10 @@ import boto3
 import requests
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
+
+from utils.auth import get_sub
 
 auth_router = APIRouter()
 
@@ -17,24 +20,51 @@ def login(request: Request):
         f"https://{os.getenv('CognitoDomain')}.auth.{os.getenv('Region')}.amazoncognito.com/oauth2/authorize?"
         f"client_id={client_id}&"
         f"response_type=code&"
-        f"scope=openid&"
+        f"scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
         f"redirect_uri="
         f"https://{request.scope['aws.event']['requestContext']['domainName']}/{os.getenv('StackName')}/get_token"
     )
 
 
 @auth_router.get("/get_token")
-async def get_token(code: str):
+def get_token(code: str):
     idp = boto3.client("cognito-idp")
     client_id = idp.list_user_pool_clients(UserPoolId=os.getenv("UserPoolId"))["UserPoolClients"][0]["ClientId"]
     client = idp.describe_user_pool_client(UserPoolId=os.getenv("UserPoolId"), ClientId=client_id)
-    token = requests.post(
-        f"https://{os.getenv('CognitoDomain')}.auth.{os.getenv('Region')}.amazoncognito.com/oauth2/token",
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "client_id": client_id,
-            "redirect_uri": client["UserPoolClient"]["CallbackURLs"][0],
-        }
-    ).json()
+    try:
+        token = requests.post(
+            f"https://{os.getenv('CognitoDomain')}.auth.{os.getenv('Region')}.amazoncognito.com/oauth2/token",
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "client_id": client_id,
+                "redirect_uri": client["UserPoolClient"]["CallbackURLs"][0],
+            }
+        ).json()
+        sub = get_sub(idp.get_user(AccessToken=token["access_token"]))
+    except (idp.exceptions.NotAuthorizedException, KeyError):
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    dynamo_db = boto3.client('dynamodb')
+    user_table = os.getenv("UserTable")
+
+    if not dynamo_db.get_item(
+            TableName=user_table,
+            Key={
+                "id": {
+                    "S": sub,
+                }
+            }
+    ).get("Item"):
+        dynamo_db.put_item(
+            TableName=user_table,
+            Item={
+                "id": {
+                    "S": sub,
+                },
+                "subscription": {
+                    "N": "1",
+                }
+            }
+        )
     return token
