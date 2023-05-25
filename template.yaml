@@ -50,6 +50,7 @@ Resources:
           CognitoDomain: !Ref CognitoDomain
           Region: !Ref "AWS::Region"
           StackName: !Ref "AWS::StackName"
+          UserTable: !Ref DynamoDB
 
   UserTable:
     Type: AWS::DynamoDB::Table
@@ -85,6 +86,7 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: false
+          Mutable: true
 
   GoogleProvider:
     Type: AWS::Cognito::UserPoolIdentityProvider
@@ -120,6 +122,7 @@ Resources:
         - email
         - openid
         - profile
+        - aws.cognito.signin.user.admin
 
   CognitoDomain:
     Type: AWS::Cognito::UserPoolDomain
