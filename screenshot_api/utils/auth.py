@@ -1,17 +1,13 @@
-import os
 from typing import Annotated
 
 import boto3
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
+
+from config import settings
+from models import User, Subscription
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-class User(BaseModel):
-    username: str
-    storage_limit: int
 
 
 def get_sub(user: dict):
@@ -26,26 +22,30 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         user = idp.get_user(AccessToken=token)
         sub = get_sub(user)
-        subscription = dynamo_db.get_item(
-            TableName=os.getenv("UserTable"),
+        subscription_id = dynamo_db.get_item(
+            TableName=settings.user_table,
             Key={
                 "id": {
                     "S": sub
                 }
             }
-        )["Item"]["subscription"]["N"]
-
-        storage_limit = dynamo_db.get_item(
-            TableName=os.getenv("SubscriptionTable"),
+        )["Item"]["subscription"]["S"]
+        subscription = dynamo_db.get_item(
+            TableName=settings.subscription_table,
             Key={
-                "id": {
-                    "S": subscription
+                "subscription_name": {
+                    "S": subscription_id
                 }
             }
-        )["Item"]["storage_limit"]["S"]
+        )["Item"]
 
         return User(
-            username=sub, storage_limit=storage_limit
+            sub=sub, subscription=Subscription(
+                id=subscription["id"]["S"],
+                subscription_name=subscription["subscription_name"]["S"],
+                storage_limit=subscription["storage_limit"]["N"],
+                cost=subscription["cost"]["N"],
+            )
         )
     except (KeyError, idp.exceptions.NotAuthorizedException):
         raise HTTPException(status_code=400, detail="Invalid token")

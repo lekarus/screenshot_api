@@ -3,7 +3,7 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "production"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1icic4y3rub4m"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1lsbfyh0fh1cm"
 s3_prefix = "production"
 region = "eu-west-3"
 confirm_changeset = false
