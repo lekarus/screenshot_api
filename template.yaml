@@ -51,10 +51,29 @@ Resources:
           Region: !Ref "AWS::Region"
           StackName: !Ref "AWS::StackName"
 
-  DynamoDB:
-    Type: AWS::Serverless::SimpleTable
+  UserTable:
+    Type: AWS::DynamoDB::Table
     Properties:
-      TableName: UserPool
+      TableName: User
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: "HASH"
+        -
+          AttributeName: "id"
+          KeyType: "RANGE"
+
+  SubscriptionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Subscription
+      KeySchema:
+        -
+          AttributeName: "id"
+          KeyType: "HASH"
+        -
+          AttributeName: "id"
+          KeyType: "RANGE"
 
   ScreenshotUserPool:
     Type: AWS::Cognito::UserPool
