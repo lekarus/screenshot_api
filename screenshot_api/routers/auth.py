@@ -1,3 +1,5 @@
+import time
+
 import boto3
 import requests
 from fastapi import APIRouter
@@ -26,7 +28,7 @@ def login(request: Request):
 
 
 @auth_router.get("/get_token")
-def get_token(code: str):
+async def get_token(code: str):
     idp = boto3.client("cognito-idp")
     client = idp.describe_user_pool_client(UserPoolId=settings.user_pool_id, ClientId=settings.google_client_id)
     token = requests.post(
@@ -78,11 +80,11 @@ def check_or_create_user(sub):
 
 def check_or_create_s3(sub):
     s3_client = boto3.client('s3', region_name=settings.region)
-    for bucket in s3_client.list_buckets()["Buckets"]:
-        if bucket["Name"] == f"screenshot-storage-{sub}":
-            return
 
-    s3_client.create_bucket(
-        Bucket=f"screenshot-storage-{sub}",
-        CreateBucketConfiguration={'LocationConstraint': settings.region},
-    )
+    try:
+        s3_client.create_bucket(
+            Bucket=f"screenshot-storage-{sub}",
+            CreateBucketConfiguration={'LocationConstraint': settings.region},
+        )
+    except s3_client.exceptions.BucketAlreadyOwnedByYou:
+        pass
