@@ -1,5 +1,3 @@
-import time
-
 import boto3
 import requests
 from fastapi import APIRouter
@@ -28,7 +26,7 @@ def login(request: Request):
 
 
 @auth_router.get("/get_token")
-async def get_token(code: str):
+def get_token(code: str):
     idp = boto3.client("cognito-idp")
     client = idp.describe_user_pool_client(UserPoolId=settings.user_pool_id, ClientId=settings.google_client_id)
     token = requests.post(
