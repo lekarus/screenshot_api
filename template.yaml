@@ -37,6 +37,7 @@ Resources:
       DockerContext: ./
     Properties:
       PackageType: Image
+      Timeout: 10
       Events:
         GateWayProxy:
           Type: Api
