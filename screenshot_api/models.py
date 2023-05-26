@@ -2,12 +2,12 @@ from pydantic import BaseModel
 
 
 class Subscription(BaseModel):
-    id: int
+    id: str
     subscription_name: str
     storage_limit: int
     cost: int
 
 
 class User(BaseModel):
-    sub: str
+    id: str
     subscription: Subscription

@@ -73,10 +73,10 @@ Resources:
     Properties:
       TableName: Subscription
       AttributeDefinitions:
-        - AttributeName: subscription_name
+        - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: subscription_name
+        - AttributeName: id
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 10
