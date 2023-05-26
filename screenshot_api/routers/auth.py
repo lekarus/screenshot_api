@@ -60,7 +60,7 @@ def get_token(code: str):
                     "S": sub,
                 },
                 "subscription": {
-                    "S": "Basic",
+                    "S": settings.base_subscription_id,
                 }
             }
         )
