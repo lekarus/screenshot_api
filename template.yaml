@@ -50,31 +50,37 @@ Resources:
           CognitoDomain: !Ref CognitoDomain
           Region: !Ref "AWS::Region"
           StackName: !Ref "AWS::StackName"
-          UserTable: !Ref DynamoDB
+          UserTable: !Ref UserTable
+          SubscriptionTable: !Ref SubscriptionTable
+          GoogleClientId: !Ref GoogleClient
 
   UserTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: User
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
       KeySchema:
-        -
-          AttributeName: "id"
-          KeyType: "HASH"
-        -
-          AttributeName: "id"
-          KeyType: "RANGE"
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
 
   SubscriptionTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: Subscription
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
       KeySchema:
-        -
-          AttributeName: "id"
-          KeyType: "HASH"
-        -
-          AttributeName: "id"
-          KeyType: "RANGE"
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
 
   ScreenshotUserPool:
     Type: AWS::Cognito::UserPool
