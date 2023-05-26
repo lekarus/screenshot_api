@@ -29,39 +29,60 @@ def login(request: Request):
 def get_token(code: str):
     idp = boto3.client("cognito-idp")
     client = idp.describe_user_pool_client(UserPoolId=settings.user_pool_id, ClientId=settings.google_client_id)
+    token = requests.post(
+        f"https://{settings.cognito_domain}.auth.{settings.region}.amazoncognito.com/oauth2/token",
+        data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "client_id": settings.google_client_id,
+            "redirect_uri": client["UserPoolClient"]["CallbackURLs"][0],
+        }
+    ).json()
     try:
-        token = requests.post(
-            f"https://{settings.cognito_domain}.auth.{settings.region}.amazoncognito.com/oauth2/token",
-            data={
-                "grant_type": "authorization_code",
-                "code": code,
-                "client_id": settings.google_client_id,
-                "redirect_uri": client["UserPoolClient"]["CallbackURLs"][0],
-            }
-        ).json()
+        if "access_token" not in token:
+            raise idp.exceptions.NotAuthorizedException({}, "")
         sub = get_sub(idp.get_user(AccessToken=token["access_token"]))
-    except (idp.exceptions.NotAuthorizedException, KeyError):
+    except idp.exceptions.NotAuthorizedException:
         raise HTTPException(status_code=400, detail="Invalid token")
 
-    dynamo_db = boto3.client('dynamodb')
+    check_or_create_user(sub)
+    check_or_create_s3(sub)
+    return token
 
-    if not dynamo_db.get_item(
-            TableName=settings.user_table,
+
+def check_or_create_user(sub):
+    dynamo_db = boto3.client('dynamodb')
+    user_table = settings.user_table
+    if dynamo_db.get_item(
+            TableName=user_table,
             Key={
                 "id": {
                     "S": sub,
                 }
             }
     ).get("Item"):
-        dynamo_db.put_item(
-            TableName=settings.user_table,
-            Item={
-                "id": {
-                    "S": sub,
-                },
-                "subscription": {
-                    "S": settings.base_subscription_id,
-                }
+        return
+
+    dynamo_db.put_item(
+        TableName=user_table,
+        Item={
+            "id": {
+                "S": sub,
+            },
+            "subscription": {
+                "S": settings.base_subscription_id,
             }
-        )
-    return token
+        }
+    )
+
+
+def check_or_create_s3(sub):
+    s3_client = boto3.client('s3', region_name=settings.region)
+    for bucket in s3_client.list_buckets()["Buckets"]:
+        if bucket["Name"] == f"screenshot-storage-{sub}":
+            return
+
+    s3_client.create_bucket(
+        Bucket=f"screenshot-storage-{sub}",
+        CreateBucketConfiguration={'LocationConstraint': settings.region},
+    )
