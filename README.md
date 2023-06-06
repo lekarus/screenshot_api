@@ -14,6 +14,8 @@ To deploy this project, you need:
 - set up your [credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) in `.aws/credentials`
 - build this project: `sam build`
 - deploy this project `sam deploy --guided`
+- setup pipenv environment `pip install pipenv && pipenv install && pipenv shell`
+- run fixture file `python subscription_fixture.py`
 
 For local deployment you can use:
 - `sam local start-lambda` to deploy Lambda locally
