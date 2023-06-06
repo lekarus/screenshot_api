@@ -6,7 +6,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from config import settings
-from utils.auth import get_sub
+from utils.auth import get_sub, get_bucket_name
 
 auth_router = APIRouter()
 
@@ -81,7 +81,7 @@ def check_or_create_s3(sub):
 
     try:
         s3_client.create_bucket(
-            Bucket=f"screenshot-storage-{sub}",
+            Bucket=get_bucket_name(sub),
             CreateBucketConfiguration={'LocationConstraint': settings.region},
         )
     except s3_client.exceptions.BucketAlreadyOwnedByYou:
