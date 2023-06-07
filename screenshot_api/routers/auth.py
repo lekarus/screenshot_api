@@ -6,7 +6,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from config import settings
-from utils.auth import get_sub, get_bucket_name
+from utils.auth import get_sub
 
 auth_router = APIRouter()
 
@@ -46,7 +46,6 @@ def get_token(code: str):
         raise HTTPException(status_code=400, detail="Invalid token")
 
     check_or_create_user(sub)
-    check_or_create_s3(sub)
     return token
 
 
@@ -74,15 +73,3 @@ def check_or_create_user(sub):
             }
         }
     )
-
-
-def check_or_create_s3(sub):
-    s3_client = boto3.client('s3', region_name=settings.region)
-
-    try:
-        s3_client.create_bucket(
-            Bucket=get_bucket_name(sub),
-            CreateBucketConfiguration={'LocationConstraint': settings.region},
-        )
-    except s3_client.exceptions.BucketAlreadyOwnedByYou:
-        pass

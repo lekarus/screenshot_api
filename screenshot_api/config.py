@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     user_pool_id: str = os.getenv("UserPoolId")
     stack_name: str = os.getenv('StackName')
     google_client_id: str = os.getenv("GoogleClientId")
-    base_subscription_id = "1"
+    bucket_name: str = os.getenv("S3Bucket")
+    base_subscription_id: str = "1"
 
 
 settings = Settings()
