@@ -59,7 +59,3 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             cost=subscription["cost"]["N"],
         )
     )
-
-
-def get_bucket_name(sub: str):
-    return f"screenshot-storage-{sub}"
