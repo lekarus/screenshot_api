@@ -29,6 +29,8 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref "AWS::StackName"
+      BinaryMediaTypes:
+        - "multipart/form-data"
 
   FastApiLambda:
     Type: AWS::Serverless::Function
