@@ -54,6 +54,11 @@ Resources:
           UserTable: !Ref UserTable
           SubscriptionTable: !Ref SubscriptionTable
           GoogleClientId: !Ref GoogleClient
+          S3Bucket: !Ref ScreenshotStorage
+
+  ScreenshotStorage:
+    Type: AWS::S3::Bucket
+
 
   UserTable:
     Type: AWS::DynamoDB::Table
