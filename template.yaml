@@ -76,6 +76,23 @@ Resources:
         ReadCapacityUnits: 10
         WriteCapacityUnits: 10
 
+  SharingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Sharing
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
+      TimeToLiveSpecification:
+        AttributeName: SharingExpirationTime
+        Enabled: true
+
   SubscriptionTable:
     Type: AWS::DynamoDB::Table
     Properties:
