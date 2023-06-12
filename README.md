@@ -16,6 +16,11 @@ To deploy this project, you need:
 - deploy this project `sam deploy --guided`
 - setup pipenv environment `pip install pipenv && pipenv install && pipenv shell`
 - run fixture file `python subscription_fixture.py`
+- replace callback url:
+  1. go to the `aws management console`, select the `api gateway` service
+  2. select `api`, `stage` and copy url
+  3. choose `cognito` service -> `ScreenshotUserPool` -> `app integration` -> `google client` -> edit hosted UI 
+  4. replace `url` taken from the API gateway in this format `{API gateway URL}/get_token`
 
 For local deployment you can use:
 - `sam local start-lambda` to deploy Lambda locally

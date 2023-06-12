@@ -29,6 +29,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref "AWS::StackName"
+      OpenApiVersion: '2.0'
       BinaryMediaTypes:
         - "multipart/form-data"
 
@@ -40,6 +41,10 @@ Resources:
     Properties:
       PackageType: Image
       Timeout: 10
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - AmazonESCognitoAccess
+        - AmazonS3FullAccess
       Events:
         GateWayProxy:
           Type: Api
